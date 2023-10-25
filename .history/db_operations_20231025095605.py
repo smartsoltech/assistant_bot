@@ -24,13 +24,13 @@ def add_reminder_to_db(date, description, member_id):
     session.commit()
     session.close()
     
-def add_contact(user_id, phone_number, first_name, last_name):
+def save_contact(name, phone):
     session = Session()
-    contact = Contact(user_id=user_id, phone_number=phone_number, first_name=first_name, last_name=last_name)
-    session.add(contact)
+    new_contact = Contact(name=name, phone=phone)
+    session.add(new_contact)
     session.commit()
     session.close()
-
+    
 def add_family_member(name):
     session = Session()
     member = FamilyMember(name=name)

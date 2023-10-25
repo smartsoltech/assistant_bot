@@ -9,7 +9,7 @@ DATABASE_URL = 'sqlite:///family_assistant.db'
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 
-
+Base.metadata.create_all(engine)
 def init_db():
     Base.metadata.create_all(engine)
 
@@ -24,20 +24,20 @@ def add_reminder_to_db(date, description, member_id):
     session.commit()
     session.close()
     
-def add_contact(user_id, phone_number, first_name, last_name):
+def save_contact(name, phone):
     session = Session()
-    contact = Contact(user_id=user_id, phone_number=phone_number, first_name=first_name, last_name=last_name)
-    session.add(contact)
+    new_contact = Contact(name=name, phone=phone)
+    session.add(new_contact)
     session.commit()
     session.close()
-
+    
 def add_family_member(name):
     session = Session()
     member = FamilyMember(name=name)
     session.add(member)
     session.commit()
-    return member.id
     session.close()
+    return member.id
 
 def add_event(description, date_str, family_member_id):
         # Преобразуем строку даты в объект datetime
@@ -48,20 +48,17 @@ def add_event(description, date_str, family_member_id):
     session.add(event)
     session.commit()
     session.close()
-    
-def get_family_member_by_name(name):
-    session = Session()
-    member = session.query(FamilyMember).filter_by(name=name).first()
-    session.close()
-    return member
 
-def add_reminder(text, date, family_member_id):
+def add_reminder(description, date, family_member_id):
     session = Session()
-    reminder = Reminder(text=text, date=date, family_member_id=family_member_id)
+    reminder = Reminder(description=description, date=date, family_member_id=family_member_id)
     session.add(reminder)
     session.commit()
     session.close()
     
+def init_db():
+    Base.metadata.create_all(engine)
+
 def get_family_members():
     session = Session()
     members = session.query(FamilyMember).all()
@@ -79,9 +76,3 @@ def find_contact_by_name_or_phone(name_or_phone):
     session.close()
     return contacts
 # Дополнительные функции для работы с базой данных (добавление напоминаний, событий и т.д.) могут быть добавлены здесь
-
-def get_reminders_by_family_member(member_id):
-    session = Session()
-    reminders = session.query(Reminder).filter_by(family_member_id=member_id).all()
-    session.close()
-    return reminders

@@ -15,7 +15,7 @@ class Contact(Base):
     __tablename__ = 'contacts'
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('family_members.id'))  # Ссылка на пользователя, который добавил контакт
+    user_id = Column(Integer, ForeignKey('users.id'))  # Ссылка на пользователя, который добавил контакт
     phone_number = Column(String, nullable=False)
     first_name = Column(String)
     last_name = Column(String)

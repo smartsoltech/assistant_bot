@@ -15,14 +15,9 @@ class Contact(Base):
     __tablename__ = 'contacts'
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('family_members.id'))  # Ссылка на пользователя, который добавил контакт
-    phone_number = Column(String, nullable=False)
-    first_name = Column(String)
-    last_name = Column(String)
-
-    def __repr__(self):
-        return f"<Contact(id={self.id}, phone_number={self.phone_number}, first_name={self.first_name}, last_name={self.last_name})>"
-
+    name = Column(String)
+    phone = Column(String)
+    family_member_id = Column(Integer, ForeignKey('family_members.id'))
 
 class Event(Base):
     __tablename__ = 'events'
