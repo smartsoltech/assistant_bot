@@ -20,12 +20,9 @@ from alembic.config import Config
 import os
 import subprocess
 import vobject
-from callback_handlers import handle_all_callbacks, handle_calendar_callback, handle_save_contact_query
 
 # Import callback handlers
 from callback_handlers import handle_all_callbacks
-
-user_sessions = {}  # словарь для хранения текущего состояния пользователя
 
 def prepare():
     """
@@ -119,32 +116,35 @@ def show_reminders(message):
     keyboard = types.InlineKeyboardMarkup()
     for member in members:
         callback_data = f"showreminders:{member.id}"
-        keyboard.add(types.InlineKeyboardButton(description=member.name, callback_data=callback_data))
+        keyboard.add(types.InlineKeyboardButton(text=member.name, callback_data=callback_data))
 
     bot.send_message(chat_id, "Select a family member to see their reminders:", reply_markup=keyboard)
 
-@bot.message_handler(content_types=['contact'])
-def handle_contact(message):
-    """Process received contact."""
+@bot.message_handler(content_types=['document'])
+def handle_vcard(message):
     chat_id = message.chat.id
 
-    # Extract contact details
-    full_name = f"{message.contact.first_name} {message.contact.last_name}" if message.contact.last_name else message.contact.first_name
-    telephone = message.contact.phone_number
-    names = full_name.split(' ', 1)
-    first_name = names[0]
-    last_name = names[1] if len(names) > 1 else ""
-    add_contact(chat_id, first_name, last_name, telephone)
-    #ask_to_save_contact(chat_id, full_name, telephone)
+    # Download vCard file from user
+    file_info = bot.get_file(message.document.file_id)
+    downloaded_file = bot.download_file(file_info.file_path)
+
+    # Save and parse the vCard content
+    with open("temp_contact_file.vcf", 'wb') as new_file:
+        new_file.write(downloaded_file)
+
+    with open("temp_contact_file.vcf", 'r') as contact_file:
+        vcard = vobject.readOne(contact_file.read())
+        full_name = vcard.fn.value
+        try:
+            telephone = vcard.tel.value
+        except AttributeError:
+            telephone = "Not provided"
+
+        ask_to_save_contact(chat_id, full_name, telephone)
 
 def ask_to_save_contact(chat_id, full_name, telephone):
-    """Ask user whether to save parsed contact information."""
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     yes_button = types.InlineKeyboardButton("Yes", callback_data="save_contact_yes")
     no_button = types.InlineKeyboardButton("No", callback_data="save_contact_no")
     keyboard.add(yes_button, no_button)
     bot.send_message(chat_id, f"Do you want to save the contact?\nName: {full_name}\nPhone: {telephone}", reply_markup=keyboard)
-    
-@bot.callback_query_handler(func=lambda call: True)
-def query_handler(call):
-    handle_all_callbacks(bot, call)

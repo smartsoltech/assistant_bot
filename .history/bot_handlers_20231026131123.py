@@ -20,12 +20,9 @@ from alembic.config import Config
 import os
 import subprocess
 import vobject
-from callback_handlers import handle_all_callbacks, handle_calendar_callback, handle_save_contact_query
 
 # Import callback handlers
 from callback_handlers import handle_all_callbacks
-
-user_sessions = {}  # словарь для хранения текущего состояния пользователя
 
 def prepare():
     """
@@ -144,7 +141,3 @@ def ask_to_save_contact(chat_id, full_name, telephone):
     no_button = types.InlineKeyboardButton("No", callback_data="save_contact_no")
     keyboard.add(yes_button, no_button)
     bot.send_message(chat_id, f"Do you want to save the contact?\nName: {full_name}\nPhone: {telephone}", reply_markup=keyboard)
-    
-@bot.callback_query_handler(func=lambda call: True)
-def query_handler(call):
-    handle_all_callbacks(bot, call)
