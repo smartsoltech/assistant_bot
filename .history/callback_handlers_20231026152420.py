@@ -7,7 +7,6 @@ from logger import log_decorator
 
 user_sessions={}
 
-@log_function_call
 @log_decorator
 def handle_all_callbacks(bot, call):
     if call.data.startswith('calendar_'):
@@ -19,7 +18,6 @@ def handle_all_callbacks(bot, call):
     else:
         bot.answer_callback_query(call.id, "Неизвестный запрос")
 
-@log_function_call
 @log_decorator
 def handle_calendar_callback(bot, call):
     result, key, step = DetailedTelegramCalendar().process(call.data)

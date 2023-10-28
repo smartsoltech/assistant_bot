@@ -4,8 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Base, FamilyMember, Contact, Event, Reminder
 from datetime import datetime
-from logger import log_decorator, log_function_call
-
+from logger import log_decorator
 DATABASE_URL = 'sqlite:///family_assistant.db'
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
@@ -14,7 +13,6 @@ Session = sessionmaker(bind=engine)
 def init_db():
     Base.metadata.create_all(engine)
 
-@log_function_call
 @log_decorator
 def add_reminder_to_db(date, description, member_id):
     session = Session()
@@ -26,8 +24,7 @@ def add_reminder_to_db(date, description, member_id):
     session.add(new_reminder)
     session.commit()
     session.close()
-    
-@log_function_call
+
 @log_decorator   
 def add_contact(user_id, phone_number, first_name, last_name):
     session = Session()
@@ -36,7 +33,6 @@ def add_contact(user_id, phone_number, first_name, last_name):
     session.commit()
     session.close()
 
-@log_function_call
 @log_decorator
 def add_family_member(name):
     session = Session()
@@ -46,7 +42,6 @@ def add_family_member(name):
     return member.id
     session.close()
 
-@log_function_call
 @log_decorator
 def add_event(description, date_str, family_member_id):
         # Преобразуем строку даты в объект datetime
@@ -58,7 +53,6 @@ def add_event(description, date_str, family_member_id):
     session.commit()
     session.close()
 
-@log_function_call
 @log_decorator    
 def get_family_member_by_name(name):
     session = Session()
@@ -66,7 +60,6 @@ def get_family_member_by_name(name):
     session.close()
     return member
 
-@log_function_call
 @log_decorator
 def add_reminder(text, date, family_member_id):
     session = Session()
@@ -75,7 +68,6 @@ def add_reminder(text, date, family_member_id):
     session.commit()
     session.close()
 
-@log_function_call
 @log_decorator    
 def get_family_members():
     session = Session()
@@ -83,7 +75,6 @@ def get_family_members():
     session.close()
     return members
 
-@log_function_call
 @log_decorator
 def find_contact_by_name_or_phone(name_or_phone):
     session = Session()

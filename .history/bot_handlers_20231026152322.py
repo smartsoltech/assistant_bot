@@ -98,7 +98,7 @@ def send_family_member_info(message):
     else:
         bot.send_message(message.chat.id, "Family member not found.")
 
-@log_function_call
+@log_decorator
 @bot.message_handler(commands=['addevent'])
 def add_new_event(message):
     chat_id = message.chat.id
@@ -154,7 +154,7 @@ def ask_to_save_contact(chat_id, full_name, telephone):
     keyboard.add(yes_button, no_button)
     bot.send_message(chat_id, f"Do you want to save the contact?\nName: {full_name}\nPhone: {telephone}", reply_markup=keyboard)
  
-@log_decorator   
+ @log_decorator   
 @bot.callback_query_handler(func=lambda call: True)
 def query_handler(call):
     handle_all_callbacks(bot, call)

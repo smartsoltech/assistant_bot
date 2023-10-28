@@ -1,14 +1,9 @@
 from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
 from telebot import types
 from db_operations import get_family_members, get_reminders_by_family_member, add_contact
-from logger import log_decorator
 
 # user_sessions = {}
 
-user_sessions={}
-
-@log_function_call
-@log_decorator
 def handle_all_callbacks(bot, call):
     if call.data.startswith('calendar_'):
         handle_calendar_callback(bot, call)
@@ -19,8 +14,6 @@ def handle_all_callbacks(bot, call):
     else:
         bot.answer_callback_query(call.id, "Неизвестный запрос")
 
-@log_function_call
-@log_decorator
 def handle_calendar_callback(bot, call):
     result, key, step = DetailedTelegramCalendar().process(call.data)
     chat_id = call.message.chat.id
@@ -42,7 +35,6 @@ def handle_calendar_callback(bot, call):
                                   chat_id,
                                   call.message.message_id)
 
-@log_decorator
 def show_member_reminders(bot, call):
     member_id = call.data.split(":")[1]
     reminders = get_reminders_by_family_member(member_id)
@@ -52,8 +44,6 @@ def show_member_reminders(bot, call):
     else:
         bot.edit_message_text(f"No reminders found for member {member_id}.", call.message.chat.id, call.message.message_id)
 
-
-@log_decorator
 def handle_save_contact_query(bot, call):
     chat_id = call.message.chat.id
     if call.data == "save_contact_yes":

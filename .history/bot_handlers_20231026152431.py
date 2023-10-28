@@ -98,7 +98,7 @@ def send_family_member_info(message):
     else:
         bot.send_message(message.chat.id, "Family member not found.")
 
-@log_function_call
+@log_decorator
 @bot.message_handler(commands=['addevent'])
 def add_new_event(message):
     chat_id = message.chat.id

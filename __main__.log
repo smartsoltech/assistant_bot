@@ -1,0 +1,6 @@
+2023-10-26 15:25:21,112 - db_operations - INFO - init_db executed successfully with arguments: () and keyword arguments: {}.
+2023-10-26 15:26:05,063 - db_operations - INFO - add_family_member executed successfully with arguments: ('Саша',) and keyword arguments: {}.
+2023-10-26 15:26:29,511 - callback_handlers - INFO - handle_all_callbacks executed successfully with arguments: (<telebot.TeleBot object at 0x7fb2b3238d30>, <telebot.types.CallbackQuery object at 0x7fb2b585a760>) and keyword arguments: {}.
+2023-10-26 15:30:43,708 - callback_handlers - INFO - handle_all_callbacks executed successfully with arguments: (<telebot.TeleBot object at 0x7fb2b3238d30>, <telebot.types.CallbackQuery object at 0x7fb2b585a9a0>) and keyword arguments: {}.
+2023-10-26 15:30:46,122 - callback_handlers - INFO - handle_all_callbacks executed successfully with arguments: (<telebot.TeleBot object at 0x7fb2b3238d30>, <telebot.types.CallbackQuery object at 0x7fb2b5855910>) and keyword arguments: {}.
+2023-10-26 15:31:21,542 - db_operations - INFO - get_family_members executed successfully with arguments: () and keyword arguments: {}.
