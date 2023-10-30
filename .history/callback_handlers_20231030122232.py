@@ -30,23 +30,6 @@ def handle_save_contact_query(bot, call, callback_data):
 
         
     bot.edit_message_text(chat_id=chat_id, message_id=call.message.message_id, text="Done!")
-    
-@log_decorator
-def handle_family_member_selection(bot, call):
-    member_id = call.data.split(":")[1]
-    chat_id = call.message.chat.id
-
-    if chat_id not in user_sessions:
-        bot.send_message(chat_id, "Произошла ошибка. Пожалуйста, попробуйте еще раз.")
-        return
-
-    user_sessions[chat_id]["family_member_id"] = member_id
-
-    bot.edit_message_text("Now, send the reminder description.",
-                          chat_id,
-                          call.message.message_id)
-
-
 @log_decorator
 def handle_calendar_callback(bot, call):
     result, key, step = DetailedTelegramCalendar().process(call.data)
@@ -135,17 +118,7 @@ def handle_all_callbacks(bot, call):
 
     except json.JSONDecodeError:
         bot.answer_callback_query(call.id, "Некорректные callback данные")
-        
-    try:
-        if call.data.startswith('cbcal_'):
-            handle_calendar_callback(bot, call)
 
-        elif call.data.startswith('choose_member:'):
-            handle_family_member_selection(bot, call)
-    except Exception as e:
-        logger.error(f"Error handling callback: {e}")
-        
-        
 def text_handle(bot, message):
     if message.text:
         bot.send_message(message.from_user.id, "Я не понимаю Вас!")

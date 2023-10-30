@@ -67,7 +67,7 @@ def get_family_member_by_name(name):
 @log_decorator
 def add_reminder(text, date, family_member_id):
     session = Session()
-    reminder = Reminder(description=text, date=date, family_member_id=family_member_id)
+    reminder = Reminder(text=text, date=date, family_member_id=family_member_id)
     session.add(reminder)
     session.commit()
     session.close()

@@ -20,8 +20,7 @@ from alembic.config import Config
 import os
 import subprocess
 import vobject
-from callback_handlers import (handle_all_callbacks, handle_calendar_callback, 
-                               handle_save_contact_query,text_handle, handle_event_description_input)
+from callback_handlers import handle_all_callbacks, handle_calendar_callback, handle_save_contact_query
 from logger import log_decorator
 # Import callback handlers
 from callback_handlers import handle_all_callbacks
@@ -152,19 +151,16 @@ def handle_contact(message):
 def ask_to_save_contact(chat_id, first_name, last_name, telephone):
     """Ask user whether to save parsed contact information."""
     keyboard = types.InlineKeyboardMarkup(row_width=2)
-    
-    data_to_send = json.dumps({
-        "action": "save_contact_yes",
-        "first_name": first_name,
-        "last_name": last_name,
-        "telephone": telephone
-    })
-    
-    yes_button = types.InlineKeyboardButton("Yes", callback_data=data_to_send)
+    yes_button = types.InlineKeyboardButton("Yes", callback_data=f"save_contact_yes:{first_name}:{last_name}:{telephone}")
     no_button = types.InlineKeyboardButton("No", callback_data="save_contact_no")
     keyboard.add(yes_button, no_button)
-    bot.send_message(chat_id, f"Do you want to save the contact?\nName: {first_name} {last_name}\nPhone: {telephone}", reply_markup=keyboard) 
-
+    bot.send_message(chat_id, f"Do you want to save the contact?\nName: {first_name} {last_name}\nPhone: {telephone}", reply_markup=keyboard)
+    
+    
+@log_decorator   
+@bot.callback_query_handler(func=lambda call: True)
+def query_handler(call):
+    handle_all_callbacks(bot, call)
 
 @log_decorator
 @bot.message_handler(commands=['full_reset'])
@@ -175,17 +171,3 @@ def full_reset(message):
     no_button = types.InlineKeyboardButton("Нет, отменить", callback_data="full_reset_cancel")
     markup.add(yes_button, no_button)
     bot.send_message(chat_id, "Вы уверены, что хотите полностью сбросить все таблицы? Это действие удалит все данные!", reply_markup=markup)
-
-
-## отлов остальных команд
-@log_decorator   
-@bot.callback_query_handler(func=lambda call: True)
-def query_handler(call):
-    handle_all_callbacks(bot, call)
-    
-@bot.message_handler(func=lambda message: True, content_types=['text'])
-def handle_text(message):
-    if message.chat.id in user_sessions:
-        handle_event_description_input(bot, message)
-    else:
-        text_handle(bot, message)  #

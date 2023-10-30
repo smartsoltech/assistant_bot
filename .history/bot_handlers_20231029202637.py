@@ -21,7 +21,7 @@ import os
 import subprocess
 import vobject
 from callback_handlers import (handle_all_callbacks, handle_calendar_callback, 
-                               handle_save_contact_query,text_handle, handle_event_description_input)
+                               handle_save_contact_query,text_handle)
 from logger import log_decorator
 # Import callback handlers
 from callback_handlers import handle_all_callbacks
@@ -183,9 +183,7 @@ def full_reset(message):
 def query_handler(call):
     handle_all_callbacks(bot, call)
     
-@bot.message_handler(func=lambda message: True, content_types=['text'])
-def handle_text(message):
-    if message.chat.id in user_sessions:
-        handle_event_description_input(bot, message)
-    else:
-        text_handle(bot, message)  #
+@log_decorator
+@bot.message_handler(content_type=['TEXT'])
+def text_handle(msg):
+    msg_handle(bot, msg)

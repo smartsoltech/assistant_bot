@@ -142,10 +142,7 @@ def handle_all_callbacks(bot, call):
 
         elif call.data.startswith('choose_member:'):
             handle_family_member_selection(bot, call)
-    except Exception as e:
-        logger.error(f"Error handling callback: {e}")
-        
-        
+
 def text_handle(bot, message):
     if message.text:
         bot.send_message(message.from_user.id, "Я не понимаю Вас!")

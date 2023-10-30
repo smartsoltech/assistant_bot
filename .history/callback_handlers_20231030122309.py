@@ -135,17 +135,7 @@ def handle_all_callbacks(bot, call):
 
     except json.JSONDecodeError:
         bot.answer_callback_query(call.id, "Некорректные callback данные")
-        
-    try:
-        if call.data.startswith('cbcal_'):
-            handle_calendar_callback(bot, call)
 
-        elif call.data.startswith('choose_member:'):
-            handle_family_member_selection(bot, call)
-    except Exception as e:
-        logger.error(f"Error handling callback: {e}")
-        
-        
 def text_handle(bot, message):
     if message.text:
         bot.send_message(message.from_user.id, "Я не понимаю Вас!")

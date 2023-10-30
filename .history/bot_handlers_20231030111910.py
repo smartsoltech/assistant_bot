@@ -183,9 +183,9 @@ def full_reset(message):
 def query_handler(call):
     handle_all_callbacks(bot, call)
     
-@bot.message_handler(func=lambda message: True, content_types=['text'])
-def handle_text(message):
+@bot.message_handler(content_types=['text'])
+def handle_text(bot, message):
     if message.chat.id in user_sessions:
         handle_event_description_input(bot, message)
     else:
-        text_handle(bot, message)  #
+        text_handle(bot, message)  # ваша стандартная обработка текстовых сообщений
