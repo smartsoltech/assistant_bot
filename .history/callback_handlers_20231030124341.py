@@ -1,12 +1,6 @@
 from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
 from telebot import types
-from db_operations import (get_family_members, 
-                           get_reminders_by_family_member, 
-                           add_contact, 
-                           full_reset, 
-                           add_event, 
-                           add_reminder,
-                           add_family_member)
+from db_operations import get_family_members, get_reminders_by_family_member, add_contact, full_reset, add_event, add_reminder
 from logger import log_decorator
 from telebot.apihelper import ApiTelegramException
 import logging
@@ -181,3 +175,8 @@ def handle_event_description_input(bot, message):
     # Удаляем информацию из user_sessions, чтобы предотвратить путаницу
     del user_sessions[chat_id]
     
+@bot.message_handler(func=lambda m: user_sessions.get(m.chat.id, {}).get("action") == "add_member")
+def save_new_member(message):
+    # Здесь мы сохраняем нового члена семьи в базу данных, используя функцию `add_family_member` из модуля db_operations.py
+    member_id = add_family_member(message.text)
+    bot.send_message(message.chat.id, f"New member {message.text} has been added with ID {member_id}.")

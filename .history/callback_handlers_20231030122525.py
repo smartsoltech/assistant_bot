@@ -1,12 +1,6 @@
 from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
 from telebot import types
-from db_operations import (get_family_members, 
-                           get_reminders_by_family_member, 
-                           add_contact, 
-                           full_reset, 
-                           add_event, 
-                           add_reminder,
-                           add_family_member)
+from db_operations import get_family_members, get_reminders_by_family_member, add_contact, full_reset, add_event, add_reminder
 from logger import log_decorator
 from telebot.apihelper import ApiTelegramException
 import logging
@@ -148,10 +142,7 @@ def handle_all_callbacks(bot, call):
 
         elif call.data.startswith('choose_member:'):
             handle_family_member_selection(bot, call)
-    except Exception as e:
-        logger.error(f"Error handling callback: {e}")
-        
-        
+
 def text_handle(bot, message):
     if message.text:
         bot.send_message(message.from_user.id, "Я не понимаю Вас!")
@@ -180,4 +171,3 @@ def handle_event_description_input(bot, message):
 
     # Удаляем информацию из user_sessions, чтобы предотвратить путаницу
     del user_sessions[chat_id]
-    

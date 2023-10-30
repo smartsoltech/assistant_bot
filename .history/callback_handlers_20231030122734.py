@@ -1,12 +1,6 @@
 from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
 from telebot import types
-from db_operations import (get_family_members, 
-                           get_reminders_by_family_member, 
-                           add_contact, 
-                           full_reset, 
-                           add_event, 
-                           add_reminder,
-                           add_family_member)
+from db_operations import get_family_members, get_reminders_by_family_member, add_contact, full_reset, add_event, add_reminder
 from logger import log_decorator
 from telebot.apihelper import ApiTelegramException
 import logging
@@ -180,4 +174,3 @@ def handle_event_description_input(bot, message):
 
     # Удаляем информацию из user_sessions, чтобы предотвратить путаницу
     del user_sessions[chat_id]
-    

@@ -4,8 +4,6 @@ from db_operations import init_db
 from dotenv import load_dotenv, find_dotenv
 from os import getenv
 
-user_sessions={}
-chat_id=""
 
 if __name__ == '__main__':
     init_db()

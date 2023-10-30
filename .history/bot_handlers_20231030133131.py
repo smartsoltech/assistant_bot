@@ -124,7 +124,9 @@ def add_member_link(message):
     with open(f"{unique_code}.png", "rb") as file:
         bot.send_photo(message.chat.id, file, caption=f"Use this QR code or [this link]({link}) to join the family.")
     try:
-
+        os.remove({unique_code}.png)
+    except OSError as e:
+        print(f"Error: {e.filename} - {e.strerror}.")
 
 def save_family_member_name(message):
     member_name = message.text
