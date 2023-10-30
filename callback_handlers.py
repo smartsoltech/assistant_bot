@@ -117,7 +117,8 @@ def handle_all_callbacks(bot, call):
                 add_contact()
         elif call.data == "full_reset_confirm":
             full_reset()
-            bot.edit_message_text("Таблицы были успешно сброшены!", call.message.chat.id, call.message.message_id)
+            
+            # bot.edit_message_text("Таблицы были успешно сброшены!", call.message.chat.id, call.message.message_id)
         elif call.data == "full_reset_cancel":
             bot.edit_message_text("Сброс отменен!", call.message.chat.id, call.message.message_id)
 
@@ -187,7 +188,7 @@ def handle_new_member_input(bot, message):
     chat_id = message.chat.id
     
     print_user_sessions()
-    print(f'\n---------MESSAGE\n\n\n\n{message}\n\n\n\n\n')
+    print(f'\n---------MESSAGE\n\n{message}\n\n')
     # Создаем нового пользователя (или члена семьи) в базе данных
     add_family_member(first_name=message.from_user.first_name, last_name=message.from_user.last_name, user_code=message.from_user.username, chat_id=chat_id, comment=message.text)
     

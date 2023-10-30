@@ -47,10 +47,13 @@ def prepare():
     token = getenv('TG_TOKEN')
     MIGRATION_PASSWORD = getenv('MIGRATION_PASSWORD')
     botname = getenv("BOT_NAME")
-    return token, MIGRATION_PASSWORD, botname
+    master_pwd = getenv("MASTER_PASSWORD")
+    return token, MIGRATION_PASSWORD, botname, master_pwd 
 
-token, MIGRATION_PASSWORD, bot_name = prepare()
+token, MIGRATION_PASSWORD, bot_name, PASSWORD = prepare()
 bot = telebot.TeleBot(token)
+awaiting_password = set()  # Множество для отслеживания пользователей, ожидающих ввода пароля
+
 
 @log_decorator
 @bot.callback_query_handler(func=lambda call: True)
@@ -223,6 +226,22 @@ def ask_to_save_contact(chat_id, first_name, last_name, telephone):
 
 @log_decorator
 @bot.message_handler(commands=['full_reset'])
+def request_password(message):
+    chat_id = message.chat.id
+    bot.send_message(chat_id, "Введите пароль для подтверждения действия:")
+    awaiting_password.add(chat_id)  # Добавляем пользователя в множество
+
+@bot.message_handler(func=lambda message: message.chat.id in awaiting_password)
+def check_password(message):
+    chat_id = message.chat.id
+    if message.text == PASSWORD:
+        # Если пароль верный, продолжаем с первоначальным действием
+        awaiting_password.remove(chat_id)  # Убираем пользователя из множества
+        full_reset(message)
+    else:
+        bot.send_message(chat_id, "Неверный пароль!")
+        awaiting_password.remove(chat_id)  # Убираем пользователя из множества
+
 def full_reset(message):
     chat_id = message.chat.id
     markup = types.InlineKeyboardMarkup()
@@ -230,7 +249,6 @@ def full_reset(message):
     no_button = types.InlineKeyboardButton("Нет, отменить", callback_data="full_reset_cancel")
     markup.add(yes_button, no_button)
     bot.send_message(chat_id, "Вы уверены, что хотите полностью сбросить все таблицы? Это действие удалит все данные!", reply_markup=markup)
-
 
 ## отлов остальных команд
 @log_decorator   
