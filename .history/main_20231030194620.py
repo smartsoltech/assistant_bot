@@ -1,10 +1,21 @@
+
 import bot_handlers
 from db_operations import init_db
 from dotenv import load_dotenv, find_dotenv
 from os import getenv
 import json
 
-user_sessions = {}
+user_sessions = {
+    "chat_id": {
+        "action": "some_action",
+        "registration_open": False,
+        "first_name":"",
+        "lsat_name":"",
+        "username":"",
+        "chat_id":""
+        
+    }
+}
 
 chat_id=""
 

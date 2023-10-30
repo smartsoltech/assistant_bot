@@ -7,12 +7,10 @@ from db_operations import (get_family_members,
                            add_event, 
                            add_reminder,
                            add_family_member)
-from db_operations import add_family_member, get_family_member_by_tid, get_family_members
-
 from logger import log_decorator
 from telebot.apihelper import ApiTelegramException
 import logging
-from main import user_sessions, initialize_user_session, print_user_sessions
+from main import user_sessions, chat_id, initialize_user_session, print_user_sessions
 import json 
 
 logger = logging.getLogger(__name__)
@@ -185,56 +183,11 @@ def handle_event_description_input(bot, message):
 @log_decorator
 def handle_new_member_input(bot, message):
     chat_id = message.chat.id
-    
     print_user_sessions()
-    print(f'\n---------MESSAGE\n\n\n\n{message}\n\n\n\n\n')
     # Создаем нового пользователя (или члена семьи) в базе данных
-    add_family_member(first_name=message.from_user.first_name, last_name=message.from_user.last_name, user_code=message.from_user.username, chat_id=chat_id, comment=message.text)
+    add_family_member(first_name=message.text, last_name="", user_code="", chat_id=chat_id)
     
     bot.send_message(chat_id, "Новый пользователь был добавлен!")
     
-
-def get_user_by_invite_id(user_code):
-    """
-    Извлекает информацию о пользователе по коду приглашения из базы данных.
-
-    Args:
-        user_code (str): Код приглашения.
-
-    Returns:
-        object: Объект FamilyMember с информацией о пользователе.
-    """
-    # Пользуемся уже определенной функцией
-    return get_family_member_by_tid(user_code)
-
-def user_exists_in_db(user_code, chat_id):
-    """
-    Проверяет, существует ли пользователь в базе данных по заданным user_code и chat_id.
-
-    Args:
-        user_code (str): Код приглашения пользователя.
-        chat_id (int): ID чата.
-
-    Returns:
-        bool: True, если пользователь найден, иначе False.
-    """
-    member = get_family_member_by_tid(user_code)
-    if member and member.chat_id == chat_id:
-        return True
-    return False
-
-def save_family_member(user_id, chat_id, first_name, last_name):
-    """
-    Сохраняет нового члена семьи в базу данных.
-
-    Args:
-        user_id (int): ID пользователя (может быть использован как код приглашения).
-        chat_id (int): ID чата.
-        first_name (str): Имя пользователя.
-        last_name (str): Фамилия пользователя.
-    """
-    # Проверяем, существует ли пользователь в базе данных
-    if not user_exists_in_db(user_id, chat_id):
-        add_family_member(first_name=first_name, last_name=last_name, user_code=user_id, chat_id=chat_id)
-    else:
-        print(f"User with user_code {user_id} and chat ID {chat_id} already exists.")
+    # Удаляем информацию из user_sessions, чтобы предотвратить путаницу
+    del user_sessions[chat_id]

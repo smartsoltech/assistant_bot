@@ -25,7 +25,7 @@ from callback_handlers import (handle_event_description_input,
 from logger import log_decorator
 # Import callback handlers
 from callback_handlers import handle_all_callbacks
-from main import user_sessions, print_user_sessions
+from main import user_sessions, chat_id
 # user_sessions = {}  # словарь для хранения текущего состояния пользователя
 import json
 import random
@@ -77,6 +77,67 @@ def migrate(message):
     else:
         bot.send_message(chat_id, "Wrong migration password!")
 
+@log_decorator
+@bot.message_handler(commands=['start'])
+def start_handle(message):
+    chat_id = message.chat.id
+
+    # Проверка наличия сессии пользователя
+    if chat_id not in user_sessions:
+        user_sessions[chat_id] = {"action": "", "registration_open": False}
+    
+    # Проверка статуса регистрации
+    if user_sessions[chat_id]["registration_open"]:
+        # Извлечение данных пользователя
+        user_id = message["from_user"]["id"]
+        first_name = message["from_user"]["first_name"]
+        last_name = message["from_user"].get("last_name", "")
+        username = message["from_user"]["username"]
+        chat_id = message["from_user"]["id"]
+        # Сохранение пользователя в БД
+        # db_operations.add_family_member(first_name, last_name, user_id, chat_id)
+
+        # Закрыть регистрацию после успешного добавления
+        user_sessions[chat_id]["registration_open"] = False
+
+        # Здесь можно добавить дополнительную логику или отправить сообщение пользователю о успешной регистрации
+    else:
+        # Обычное поведение для команды /start (если регистрация не открыта)
+        pass   
+def text_handle(message):
+    bot.send_message(message.from_user.id, 'sample') 
+    
+@log_decorator
+@bot.message_handler(commands=['start'])
+def start_handle(message):
+    chat_id = message.chat.id
+    user_data = message.from_user
+
+    # Проверка наличия кода в сообщении (пользователь перешел по инвайт-ссылке)
+    command, _, code = message.text.partition(' ')
+
+    if code and code in user_sessions and user_sessions[code]["registration_open"]:
+        # Извлечение данных пользователя
+        user_sessions[code]["first_name"] = user_data.first_name
+        user_sessions[code]["last_name"] = user_data.last_name or ""
+        user_sessions[code]["username"] = user_data.username
+        user_sessions[code]["chat_id"] = chat_id
+
+        # Сохранение пользователя в БД
+        # db_operations.add_family_member(
+        #     user_sessions[code]["first_name"], 
+        #     user_sessions[code]["last_name"], 
+        #     user_sessions[code]["chat_id"]
+        # )
+
+        # Закрыть регистрацию после успешного добавления
+        user_sessions[code]["registration_open"] = False
+
+        # Здесь можно добавить дополнительную логику или отправить сообщение пользователю о успешной регистрации
+        bot.send_message(chat_id, "You have been successfully registered!")
+    else:
+        # Обычное поведение для команды /start (если регистрация не открыта)
+        pass    
 
 @log_decorator
 @bot.message_handler(commands=['addmember'])
@@ -114,32 +175,6 @@ def save_family_member_name(message):
     member_id = add_member_to_db(member_name)
     bot.send_message(message.chat.id, f"Family member '{member_name}' added with ID {member_id}.")
 
-@bot.message_handler(commands=['start'])
-def start_handle(message):
-    chat_id = message.chat.id
-    user_data = message.from_user
-
-    # Проверка наличия кода в сообщении (пользователь перешел по инвайт-ссылке)
-    command, _, code = message.text.partition(' ')
-
-    if code and code in user_sessions and user_sessions[code]["registration_open"]:
-        # Извлечение данных пользователя
-        user_sessions[code]["first_name"] = user_data.first_name
-        user_sessions[code]["last_name"] = user_data.last_name or ""
-        user_sessions[code]["username"] = user_data.username
-        user_sessions[code]["chat_id"] = chat_id
-
-        # Закрыть регистрацию после успешного добавления
-        user_sessions[code]["registration_open"] = False
-
-        # Здесь можно добавить дополнительную логику или отправить сообщение пользователю о успешной регистрации
-        bot.send_message(chat_id, "You have been successfully registered!")
-        handle_new_member_input(bot, message)
-
-def text_handle(bot, message):
-  pass 
-
-    
 @log_decorator
 @bot.message_handler(commands=['getmember'])
 def get_family_member(message):

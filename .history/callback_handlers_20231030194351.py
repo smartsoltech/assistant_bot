@@ -12,7 +12,7 @@ from db_operations import add_family_member, get_family_member_by_tid, get_famil
 from logger import log_decorator
 from telebot.apihelper import ApiTelegramException
 import logging
-from main import user_sessions, initialize_user_session, print_user_sessions
+from main import user_sessions, chat_id, initialize_user_session, print_user_sessions
 import json 
 
 logger = logging.getLogger(__name__)
@@ -193,6 +193,9 @@ def handle_new_member_input(bot, message):
     
     bot.send_message(chat_id, "Новый пользователь был добавлен!")
     
+    # Удаляем информацию из user_sessions, чтобы предотвратить путаницу
+    del user_sessions[chat_id]
+
 
 def get_user_by_invite_id(user_code):
     """
