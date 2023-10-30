@@ -25,7 +25,7 @@ from callback_handlers import (handle_event_description_input,
 from logger import log_decorator
 # Import callback handlers
 from callback_handlers import handle_all_callbacks
-from main import user_sessions, print_user_sessions
+from main import user_sessions, chat_id, print_user_sessions
 # user_sessions = {}  # словарь для хранения текущего состояния пользователя
 import json
 import random
@@ -134,7 +134,7 @@ def start_handle(message):
 
         # Здесь можно добавить дополнительную логику или отправить сообщение пользователю о успешной регистрации
         bot.send_message(chat_id, "You have been successfully registered!")
-        handle_new_member_input(bot, message)
+        save_family_member_name(message)
 
 def text_handle(bot, message):
   pass 

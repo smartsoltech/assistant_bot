@@ -1,11 +1,10 @@
+
 import bot_handlers
 from db_operations import init_db
 from dotenv import load_dotenv, find_dotenv
 from os import getenv
 import json
-
-user_sessions = {}
-
+user_sessions={}
 chat_id=""
 
 def initialize_user_session(chat_id, action):

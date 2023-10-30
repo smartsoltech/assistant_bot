@@ -7,12 +7,10 @@ from db_operations import (get_family_members,
                            add_event, 
                            add_reminder,
                            add_family_member)
-from db_operations import add_family_member, get_family_member_by_tid, get_family_members
-
 from logger import log_decorator
 from telebot.apihelper import ApiTelegramException
 import logging
-from main import user_sessions, initialize_user_session, print_user_sessions
+from main import user_sessions, chat_id
 import json 
 
 logger = logging.getLogger(__name__)
@@ -74,11 +72,11 @@ def handle_calendar_callback(bot, call):
         action = user_sessions[chat_id]["action"]
         user_sessions[chat_id]["date"] = result
 
-        if action == "addevent":
+        if action == "add_event":
             bot.edit_message_text(f"You selected {result} for your event. Now send the event description.",
                                   chat_id,
                                   call.message.message_id)
-        elif action == "addreminder":
+        elif action == "add_reminder":
             # After selecting a date, let the user choose a family member
             members = get_family_members()
             markup = types.InlineKeyboardMarkup()
@@ -108,7 +106,10 @@ def show_member_reminders(bot, call):
 @log_decorator
 def handle_all_callbacks(bot, call):
     try:
-        if call.data.startswith('showreminders:'):
+        if call.data.startswith('cbcal_'):
+            handle_calendar_callback(bot, call)
+        
+        elif call.data.startswith('showreminders:'):
             show_member_reminders(bot, call)
         
         elif call.data in ["save_contact_yes", "save_contact_no"]:
@@ -128,7 +129,6 @@ def handle_all_callbacks(bot, call):
         logger.error(f"Telegram API Error while handling callback: {e}")
     except Exception as e:
         logger.error(f"Error handling callback: {e}")
-        
     try:
         callback_data = json.loads(call.data)
         action = callback_data.get("action")
@@ -152,15 +152,14 @@ def handle_all_callbacks(bot, call):
         logger.error(f"Error handling callback: {e}")
         
         
-# def text_handle(bot, message):
-#     if message.text:
-#         bot.send_message(message.from_user.id, "Я не понимаю Вас!")
+def text_handle(bot, message):
+    if message.text:
+        bot.send_message(message.from_user.id, "Я не понимаю Вас!")
         
 @log_decorator
 def handle_event_description_input(bot, message):
     chat_id = message.chat.id
-    initialize_user_session(chat_id, "action")
-    print_user_sessions()
+    
     if chat_id not in user_sessions or "action" not in user_sessions[chat_id]:
         logger.error(f"No action found in user_sessions for chat_id: {chat_id}")
         bot.send_message(chat_id, "Произошла ошибка. Пожалуйста, попробуйте еще раз.")
@@ -168,13 +167,13 @@ def handle_event_description_input(bot, message):
     
     action = user_sessions[chat_id]["action"]
     date = user_sessions[chat_id]["date"]
-    print_user_sessions()
-    if action == "addevent":
+
+    if action == "add_event":
         # Сохраняем событие в базу данных
         add_event(message.text, date, chat_id)  # Предположим, что chat_id является ID члена семьи
         bot.send_message(chat_id, "Ваше событие было добавлено!")
 
-    elif action == "addreminder":
+    elif action == "add_reminder":
         # Сохраняем напоминание в базу данных
         add_reminder(message.text, date, chat_id)  # Предположим, что chat_id является ID члена семьи
         bot.send_message(chat_id, "Ваше напоминание было добавлено!")
@@ -182,59 +181,3 @@ def handle_event_description_input(bot, message):
     # Удаляем информацию из user_sessions, чтобы предотвратить путаницу
     del user_sessions[chat_id]
     
-@log_decorator
-def handle_new_member_input(bot, message):
-    chat_id = message.chat.id
-    
-    print_user_sessions()
-    print(f'\n---------MESSAGE\n\n\n\n{message}\n\n\n\n\n')
-    # Создаем нового пользователя (или члена семьи) в базе данных
-    add_family_member(first_name=message.from_user.first_name, last_name=message.from_user.last_name, user_code=message.from_user.username, chat_id=chat_id, comment=message.text)
-    
-    bot.send_message(chat_id, "Новый пользователь был добавлен!")
-    
-
-def get_user_by_invite_id(user_code):
-    """
-    Извлекает информацию о пользователе по коду приглашения из базы данных.
-
-    Args:
-        user_code (str): Код приглашения.
-
-    Returns:
-        object: Объект FamilyMember с информацией о пользователе.
-    """
-    # Пользуемся уже определенной функцией
-    return get_family_member_by_tid(user_code)
-
-def user_exists_in_db(user_code, chat_id):
-    """
-    Проверяет, существует ли пользователь в базе данных по заданным user_code и chat_id.
-
-    Args:
-        user_code (str): Код приглашения пользователя.
-        chat_id (int): ID чата.
-
-    Returns:
-        bool: True, если пользователь найден, иначе False.
-    """
-    member = get_family_member_by_tid(user_code)
-    if member and member.chat_id == chat_id:
-        return True
-    return False
-
-def save_family_member(user_id, chat_id, first_name, last_name):
-    """
-    Сохраняет нового члена семьи в базу данных.
-
-    Args:
-        user_id (int): ID пользователя (может быть использован как код приглашения).
-        chat_id (int): ID чата.
-        first_name (str): Имя пользователя.
-        last_name (str): Фамилия пользователя.
-    """
-    # Проверяем, существует ли пользователь в базе данных
-    if not user_exists_in_db(user_id, chat_id):
-        add_family_member(first_name=first_name, last_name=last_name, user_code=user_id, chat_id=chat_id)
-    else:
-        print(f"User with user_code {user_id} and chat ID {chat_id} already exists.")

@@ -15,7 +15,6 @@ Session = sessionmaker(bind=engine)
 def init_db():
     Base.metadata.create_all(engine)
 
-
 @log_decorator
 def add_reminder_to_db(date, description, member_id):
     session = Session()
@@ -37,15 +36,13 @@ def add_contact(user_id, phone_number, first_name, last_name):
     session.close()
 
 @log_decorator
-def add_family_member(first_name, last_name, user_code, chat_id, comment):
+def add_family_member(first_name, last_name, user_code, chat_id):
     session = Session()
     member = FamilyMember(
         first_name=first_name,
         last_name=last_name,
         user_code=user_code,
-        chat_id=chat_id, 
-        comment = comment,
-    
+        chat_id=chat_id
     )
     session.add(member)
     session.commit()
@@ -65,9 +62,9 @@ def add_event(description, date_input, family_member_id):
     session.close()
 
 @log_decorator    
-def get_family_member_by_tid(telegraid):
+def get_family_member_by_name(name):
     session = Session()
-    member = session.query(FamilyMember).filter_by(user_code=telegramid).first()
+    member = session.query(FamilyMember).filter_by(name=name).first()
     session.close()
     return member
 

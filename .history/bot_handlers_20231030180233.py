@@ -5,6 +5,7 @@ from db_operations import (
     add_reminder,
     get_family_members,
     add_reminder_to_db,
+    get_family_member_by_name,
     find_contact_by_name_or_phone,
     get_reminders_by_family_member,
     add_contact,
@@ -21,11 +22,11 @@ import os
 import subprocess
 import vobject
 from callback_handlers import (handle_event_description_input,
-                                handle_new_member_input)
+                               handle_new_member_input)
 from logger import log_decorator
 # Import callback handlers
 from callback_handlers import handle_all_callbacks
-from main import user_sessions, print_user_sessions
+from main import user_sessions, chat_id
 # user_sessions = {}  # словарь для хранения текущего состояния пользователя
 import json
 import random
@@ -46,10 +47,9 @@ def prepare():
     load_dotenv('.env')
     token = getenv('TG_TOKEN')
     MIGRATION_PASSWORD = getenv('MIGRATION_PASSWORD')
-    botname = getenv("BOT_NAME")
-    return token, MIGRATION_PASSWORD, botname
+    return token, MIGRATION_PASSWORD
 
-token, MIGRATION_PASSWORD, bot_name = prepare()
+token, MIGRATION_PASSWORD = prepare()
 bot = telebot.TeleBot(token)
 
 @log_decorator
@@ -77,24 +77,45 @@ def migrate(message):
     else:
         bot.send_message(chat_id, "Wrong migration password!")
 
-
+@log_decorator
+@bot.message_handler(commands=['start'])
+def start_bot(message):
+    # Получение параметра start
+    args = message.text.split()
+    if len(args) > 1:
+        unique_code = args[1]
+        
+        # Проверка, есть ли данный код в user_sessions и получение chat_id
+        inviter_chat_id = None
+        for key, value in user_sessions.items():
+            if value.get("code") == unique_code:
+                inviter_chat_id = key
+                break
+        
+        if inviter_chat_id:
+            bot.send_message(inviter_chat_id, "Someone has joined using your link! Please provide their name.")
+            bot.send_message(message.chat.id, "You've been invited to join a family. Please wait for confirmation.")
+        else:
+            bot.send_message(message.chat.id, "Invalid invitation link.")
+    else:
+        # Обычное приветствие или другие действия
+        bot.send_message(message.chat.id, "Welcome!")
+        
+        
 @log_decorator
 @bot.message_handler(commands=['addmember'])
+# def add_family_member(message):
+#     chat_id = message.chat.id
+#     bot.send_message(chat_id, "Please send the name of the family member you want to add.")
+#     bot.register_next_step_handler(message, save_family_member_name)
 def add_member_link(message):
     unique_code = generate_unique_code()
 
     # Ссылка на вашего бота с параметром `start`
-    link = f"https://t.me/{bot_name}?start={unique_code}"
+    link = f"https://t.me/@trevor_TEST_bot?start={unique_code}"
     
-    # Сохранение уникального кода в user_sessions для последующей проверки
-    user_sessions[unique_code] = {
-        "action": "add_member",
-        "registration_open": True,
-        "first_name": "",
-        "last_name": "",
-        "username": "",
-        "chat_id": ""
-    }
+    # Сохранение уникального кода и ID чата в user_sessions для последующей проверки
+    user_sessions[message.chat.id] = {"action": "add_member", "code": unique_code}
 
     # Генерация QR-кода
     img = qrcode.make(link)
@@ -103,43 +124,13 @@ def add_member_link(message):
     
     with open(qrname, "rb") as file:
         bot.send_photo(message.chat.id, file, caption=f"Use this QR code or [this link]({link}) to join the family.")
-
-    # Здесь можете отправить пользователю сообщение с инструкциями или запросить комментарий
-    bot.send_message(message.chat.id, f'Введите комментарий для этого пользователя!')
-
- 
     
+
 def save_family_member_name(message):
     member_name = message.text
     member_id = add_member_to_db(member_name)
     bot.send_message(message.chat.id, f"Family member '{member_name}' added with ID {member_id}.")
 
-@bot.message_handler(commands=['start'])
-def start_handle(message):
-    chat_id = message.chat.id
-    user_data = message.from_user
-
-    # Проверка наличия кода в сообщении (пользователь перешел по инвайт-ссылке)
-    command, _, code = message.text.partition(' ')
-
-    if code and code in user_sessions and user_sessions[code]["registration_open"]:
-        # Извлечение данных пользователя
-        user_sessions[code]["first_name"] = user_data.first_name
-        user_sessions[code]["last_name"] = user_data.last_name or ""
-        user_sessions[code]["username"] = user_data.username
-        user_sessions[code]["chat_id"] = chat_id
-
-        # Закрыть регистрацию после успешного добавления
-        user_sessions[code]["registration_open"] = False
-
-        # Здесь можно добавить дополнительную логику или отправить сообщение пользователю о успешной регистрации
-        bot.send_message(chat_id, "You have been successfully registered!")
-        handle_new_member_input(bot, message)
-
-def text_handle(bot, message):
-  pass 
-
-    
 @log_decorator
 @bot.message_handler(commands=['getmember'])
 def get_family_member(message):
@@ -246,9 +237,9 @@ def handle_text(message):
         # Получаем текущее действие пользователя
         action = user_sessions[chat_id].get("action")
 
-        if action == "add_event":
+        if action == "addevent":
             handle_event_description_input(bot, message)
-        elif action == "add_member":
+        elif action == "add_family_member":
             handle_new_member_input(bot, message)
         # добавьте другие проверки действий здесь по мере необходимости
         else:

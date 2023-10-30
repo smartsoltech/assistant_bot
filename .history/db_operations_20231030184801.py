@@ -37,15 +37,13 @@ def add_contact(user_id, phone_number, first_name, last_name):
     session.close()
 
 @log_decorator
-def add_family_member(first_name, last_name, user_code, chat_id, comment):
+def add_family_member(first_name, last_name, user_code, chat_id):
     session = Session()
     member = FamilyMember(
         first_name=first_name,
         last_name=last_name,
         user_code=user_code,
-        chat_id=chat_id, 
-        comment = comment,
-    
+        chat_id=chat_id
     )
     session.add(member)
     session.commit()

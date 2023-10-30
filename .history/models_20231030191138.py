@@ -13,7 +13,7 @@ class FamilyMember(Base):
     last_name = Column(String)                    # Фамилия члена семьи (необязательное поле)
     user_code = Column(String, unique=True)       # Уникальный код пользователя
     chat_id = Column(Integer, unique=True)        # ID чата в Telegram
-    comment = Column(String)                      # Комментарий
+    comment = Column(String)
 
 class Contact(Base):
     __tablename__ = 'contacts'
