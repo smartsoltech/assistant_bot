@@ -9,7 +9,6 @@ from db_operations import (
     find_contact_by_name_or_phone,
     get_reminders_by_family_member,
     add_contact,
-    add_family_member,
 )
 from os import getenv
 from dotenv import load_dotenv
@@ -31,7 +30,6 @@ from main import user_sessions, chat_id
 import json
 import random
 import string
-import qrcode
 
 def generate_unique_code():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
@@ -79,52 +77,15 @@ def migrate(message):
 
 @log_decorator
 @bot.message_handler(commands=['start'])
-def start_bot(message):
-    # Получение параметра start
-    args = message.text.split()
-    if len(args) > 1:
-        unique_code = args[1]
-        
-        # Проверка, есть ли данный код в user_sessions и получение chat_id
-        inviter_chat_id = None
-        for key, value in user_sessions.items():
-            if value.get("code") == unique_code:
-                inviter_chat_id = key
-                break
-        
-        if inviter_chat_id:
-            bot.send_message(inviter_chat_id, "Someone has joined using your link! Please provide their name.")
-            bot.send_message(message.chat.id, "You've been invited to join a family. Please wait for confirmation.")
-        else:
-            bot.send_message(message.chat.id, "Invalid invitation link.")
-    else:
-        # Обычное приветствие или другие действия
-        bot.send_message(message.chat.id, "Welcome!")
-        
-        
+def start(m):
+    bot.send_message(m.chat.id, "Welcome! Use commands to interact with me.")
+
 @log_decorator
 @bot.message_handler(commands=['addmember'])
-# def add_family_member(message):
-#     chat_id = message.chat.id
-#     bot.send_message(chat_id, "Please send the name of the family member you want to add.")
-#     bot.register_next_step_handler(message, save_family_member_name)
-def add_member_link(message):
-    unique_code = generate_unique_code()
-
-    # Ссылка на вашего бота с параметром `start`
-    link = f"https://t.me/@trevor_TEST_bot?start={unique_code}"
-    
-    # Сохранение уникального кода и ID чата в user_sessions для последующей проверки
-    user_sessions[message.chat.id] = {"action": "add_member", "code": unique_code}
-
-    # Генерация QR-кода
-    img = qrcode.make(link)
-    img.save(f"{unique_code}.png")
-    
-    with open(f"{unique_code}.png", "rb") as file:
-        bot.send_photo(message.chat.id, file, caption=f"Use this QR code or [this link]({link}) to join the family.")
-    try:
-
+def add_family_member(message):
+    chat_id = message.chat.id
+    bot.send_message(chat_id, "Please send the name of the family member you want to add.")
+    bot.register_next_step_handler(message, save_family_member_name)
 
 def save_family_member_name(message):
     member_name = message.text
@@ -234,10 +195,3 @@ def handle_text(message):
         handle_event_description_input(bot, message)
     else:
         text_handle(bot, message)  #
-
-@bot.message_handler(func=lambda m: user_sessions.get(m.chat.id, {}).get("action") == "add_member")
-def save_new_member(message):
-    # Здесь мы сохраняем нового члена семьи в базу данных, используя функцию `add_family_member` из модуля db_operations.py
-    member_id = add_family_member(message.text)
-    bot.send_message(message.chat.id, f"New member {message.text} has been added with ID {member_id}.")
-    

@@ -36,7 +36,7 @@ def add_contact(user_id, phone_number, first_name, last_name):
     session.close()
 
 @log_decorator
-def add_family_member(first_name, last_name, user_code, chat_id):
+def add_family_member(first_name, last_name=None, user_code, chat_id):
     session = Session()
     member = FamilyMember(
         first_name=first_name,

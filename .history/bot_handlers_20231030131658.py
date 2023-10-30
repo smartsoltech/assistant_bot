@@ -123,8 +123,6 @@ def add_member_link(message):
     
     with open(f"{unique_code}.png", "rb") as file:
         bot.send_photo(message.chat.id, file, caption=f"Use this QR code or [this link]({link}) to join the family.")
-    try:
-
 
 def save_family_member_name(message):
     member_name = message.text
@@ -240,4 +238,3 @@ def save_new_member(message):
     # Здесь мы сохраняем нового члена семьи в базу данных, используя функцию `add_family_member` из модуля db_operations.py
     member_id = add_family_member(message.text)
     bot.send_message(message.chat.id, f"New member {message.text} has been added with ID {member_id}.")
-    
