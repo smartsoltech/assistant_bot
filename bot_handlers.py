@@ -240,4 +240,3 @@ def save_new_member(message):
     # Здесь мы сохраняем нового члена семьи в базу данных, используя функцию `add_family_member` из модуля db_operations.py
     member_id = add_family_member(message.text)
     bot.send_message(message.chat.id, f"New member {message.text} has been added with ID {member_id}.")
-    
